@@ -24,3 +24,4 @@ __pycache__/
 # Ignore Python virtual environment directories
 venv/
 .venv/
+.env
