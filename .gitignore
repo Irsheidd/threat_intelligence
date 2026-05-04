@@ -2,3 +2,25 @@ venv
 .venv
 .venv/
 venv/
+.env
+.env.local
+.env.*.local
+__pycache__/
+*.pyc
+
+# Ignore database files
+*.db
+*.sqlite
+*.sqlite3
+# Ignore log files
+*.log
+# Ignore IDE/editor specific files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+# Ignore Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+# Ignore Python virtual environment directories
+venv/
+.venv/
