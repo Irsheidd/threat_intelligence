@@ -1,0 +1,8 @@
+2026-05-04T09:06:05,user_45,sess_025,192.168.1.65,10.0.0.2,JO,login,LOGIN,failed,820,suspicious,suspicious
+2026-05-04T09:07:10,user_12,sess_026,192.168.1.70,10.0.0.3,US,web,GET,success,2048,normal,normal
+2026-05-04T09:08:15,user_89,sess_027,192.168.1.75,10.0.0.4,JO,login,LOGIN,success,512,normal,normal
+2026-05-04T09:09:20,user_156,sess_028,192.168.1.80,10.0.0.5,IR,scan,SCAN,failed,1024,suspicious,attack
+2026-05-04T09:10:25,user_45,sess_025,192.168.1.65,10.0.0.6,JO,data_transfer,UPLOAD,success,5120,normal,normal
+2026-05-04T09:11:30,user_200,sess_029,192.168.1.85,10.0.0.7,KP,login,LOGIN,failed,256,attack,attack
+2026-05-04T09:12:35,user_50,sess_030,192.168.1.90,10.0.0.8,JO,web,POST,success,1536,normal,normal
+2026-05-04T09:13:40,user_100,sess_031,192.168.1.95,10.0.0.9,US,login,LOGIN,success,384,normal,normal
