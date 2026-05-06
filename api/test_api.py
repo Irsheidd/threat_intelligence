@@ -20,7 +20,12 @@ def main():
     with app.test_client() as client:
         response = client.post('/detect', json={'logs': sample_logs})
         print('Status:', response.status_code)
-        print('Response JSON:', response.get_json())
+        payload = response.get_json()
+        print('Response JSON:', payload)
+
+        alerts_response = client.get('/api/alerts')
+        print('Alerts Status:', alerts_response.status_code)
+        print('Alerts JSON:', alerts_response.get_json())
 
 
 if __name__ == '__main__':

@@ -1,0 +1,23 @@
+detection_task:
+  description: >
+    Inspect the incoming network logs and identify suspicious sessions.
+    Focus on anomaly scores, failed login bursts, unusual countries, and large transfers.
+  expected_output: >
+    A structured summary of suspicious sessions with anomaly scores and key detection evidence.
+  agent: detector_agent
+
+analysis_task:
+  description: >
+    Explain why each suspicious session was flagged and describe the likely threat behavior.
+    Translate the raw detection into simple, readable security language.
+  expected_output: >
+    A plain-language analysis that explains the suspicious activity and the likely impact.
+  agent: analyzer_agent
+
+reporting_task:
+  description: >
+    Generate a final operational alert with the issue description, threat level, and recommended action.
+    Keep the wording concise and actionable for responders.
+  expected_output: >
+    A structured alert message ready for operators or an alert dashboard.
+  agent: reporter_agent

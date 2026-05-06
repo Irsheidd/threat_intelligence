@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Threat Intelligence Dashboard</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #08111f;
+        --panel: rgba(11, 21, 36, 0.84);
+        --panel-strong: #0f1b2d;
+        --text: #e5eefb;
+        --muted: #9cb0c9;
+        --line: rgba(161, 186, 218, 0.16);
+        --accent: #48d1a0;
+        --accent-2: #7da8ff;
+        --warning: #f7c948;
+        --critical: #ff6b6b;
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Inter, "Segoe UI", sans-serif;
+        color: var(--text);
+        background:
+          radial-gradient(circle at top left, rgba(72, 209, 160, 0.18), transparent 35%),
+          radial-gradient(circle at top right, rgba(125, 168, 255, 0.16), transparent 32%),
+          linear-gradient(180deg, #05101d 0%, #08111f 42%, #0a1524 100%);
+        min-height: 100vh;
+      }
+
+      .shell {
+        width: min(1200px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 28px 0 40px;
+      }
+
+      .hero {
+        display: grid;
+        gap: 18px;
+        grid-template-columns: 1.4fr 0.9fr;
+        align-items: stretch;
+        margin-bottom: 24px;
+      }
+
+      .hero-card, .panel {
+        border: 1px solid var(--line);
+        background: var(--panel);
+        backdrop-filter: blur(12px);
+        border-radius: 22px;
+        box-shadow: 0 22px 60px rgba(0, 0, 0, 0.25);
+      }
+
+      .hero-card {
+        padding: 28px;
+      }
+
+      .hero-card h1 {
+        margin: 0 0 10px;
+        font-size: clamp(2rem, 4vw, 3.5rem);
+        line-height: 1.02;
+      }
+
+      .hero-card p {
+        margin: 0;
+        color: var(--muted);
+        max-width: 68ch;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .stat {
+        padding: 20px;
+        background: linear-gradient(180deg, rgba(15, 27, 45, 0.96), rgba(11, 21, 36, 0.96));
+        border: 1px solid var(--line);
+        border-radius: 20px;
+      }
+
+      .stat-label {
+        color: var(--muted);
+        font-size: 0.86rem;
+        margin-bottom: 6px;
+      }
+
+      .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+      }
+
+      .stat-subtext {
+        margin-top: 6px;
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+
+      .grid {
+        display: grid;
+        gap: 18px;
+        grid-template-columns: 1.1fr 0.9fr;
+      }
+
+      .panel {
+        padding: 22px;
+      }
+
+      .panel h2 {
+        margin: 0 0 12px;
+        font-size: 1.15rem;
+      }
+
+      .panel p {
+        margin-top: 0;
+        color: var(--muted);
+      }
+
+      textarea {
+        width: 100%;
+        min-height: 230px;
+        resize: vertical;
+        border-radius: 16px;
+        border: 1px solid var(--line);
+        background: #071221;
+        color: var(--text);
+        padding: 16px;
+        font: inherit;
+        outline: none;
+      }
+
+      button {
+        margin-top: 14px;
+        border: none;
+        border-radius: 14px;
+        padding: 13px 18px;
+        font-weight: 700;
+        color: #071221;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        cursor: pointer;
+      }
+
+      button.secondary {
+        background: transparent;
+        color: var(--text);
+        border: 1px solid var(--line);
+      }
+
+      .actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th, td {
+        text-align: left;
+        padding: 12px 10px;
+        border-bottom: 1px solid var(--line);
+        vertical-align: top;
+      }
+
+      th {
+        color: var(--muted);
+        font-weight: 600;
+        font-size: 0.86rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        padding: 5px 10px;
+        font-size: 0.8rem;
+        font-weight: 700;
+      }
+
+      .badge.critical { background: rgba(255, 107, 107, 0.16); color: #ffb2b2; }
+      .badge.high { background: rgba(255, 194, 88, 0.16); color: #ffd789; }
+      .badge.medium { background: rgba(125, 168, 255, 0.16); color: #bfd1ff; }
+      .badge.low { background: rgba(72, 209, 160, 0.16); color: #b7f4db; }
+
+      .alert-card {
+        padding: 16px;
+        border-radius: 18px;
+        border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(15, 27, 45, 0.98), rgba(10, 21, 36, 0.98));
+        margin-bottom: 12px;
+      }
+
+      .alert-card strong {
+        display: block;
+        margin-bottom: 6px;
+      }
+
+      .alert-card p {
+        margin: 8px 0 0;
+      }
+
+      .muted { color: var(--muted); }
+
+      @media (max-width: 900px) {
+        .hero, .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <section class="hero">
+        <div class="hero-card">
+          <h1>Threat Intelligence Dashboard</h1>
+          <p>
+            Multi-agent detection pipeline for network logs. The detector isolates suspicious sessions,
+            the analyzer explains the behavior, and the reporter turns it into actionable alerts.
+          </p>
+        </div>
+        <div class="stats">
+          <div class="stat">
+            <div class="stat-label">Total alerts</div>
+            <div class="stat-value" id="totalAlerts">{{ summary.total_alerts }}</div>
+            <div class="stat-subtext">Alerts stored in memory during this session</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Highest severity</div>
+            <div class="stat-value" id="highestSeverity">{{ summary.latest_alert.threat_level if summary.latest_alert else 'low' }}</div>
+            <div class="stat-subtext">Latest observed alert level</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Critical / High</div>
+            <div class="stat-value" id="criticalHigh">{{ summary.severity_counts.critical }} / {{ summary.severity_counts.high }}</div>
+            <div class="stat-subtext">Prioritize these events first</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Medium / Low</div>
+            <div class="stat-value" id="mediumLow">{{ summary.severity_counts.medium }} / {{ summary.severity_counts.low }}</div>
+            <div class="stat-subtext">Monitor for changes or repetition</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="grid">
+        <div class="panel">
+          <h2>Run Detection</h2>
+          <p>Paste one log entry per line. The API will score the session and store any generated alerts.</p>
+          <textarea id="logInput">2026-05-04T09:06:05,user_45,sess_025,192.168.1.65,10.0.0.2,JO,login,LOGIN,failed,820,suspicious,suspicious
+2026-05-04T09:07:10,user_12,sess_026,192.168.1.70,10.0.0.3,US,web,GET,success,2048,normal,normal
+2026-05-04T09:11:30,user_200,sess_029,192.168.1.85,10.0.0.7,KP,login,LOGIN,failed,256,attack,attack</textarea>
+          <div class="actions">
+            <button id="runBtn" type="button">Analyze Logs</button>
+            <button id="refreshBtn" type="button" class="secondary">Refresh Alerts</button>
+          </div>
+          <div id="runStatus" class="muted" style="margin-top: 12px;"></div>
+        </div>
+
+        <div class="panel">
+          <h2>Latest Alerts</h2>
+          <div id="alertsList">
+            {% if alerts %}
+              {% for alert in alerts|reverse %}
+                <div class="alert-card">
+                  <span class="badge {{ alert.threat_level }}">{{ alert.threat_level|upper }}</span>
+                  <strong>{{ alert.issue }}</strong>
+                  <div class="muted">Session {{ alert.session_id or 'n/a' }} • Anomaly score {{ '%.4f'|format(alert.anomaly_score or 0) }}</div>
+                  <p>{{ alert.description }}</p>
+                  <p><strong>Recommended action:</strong> {{ alert.recommended_action }}</p>
+                </div>
+              {% endfor %}
+            {% else %}
+              <p class="muted">No alerts have been generated yet.</p>
+            {% endif %}
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" style="margin-top: 18px;">
+        <h2>Detection Results</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Session</th>
+                <th>User</th>
+                <th>Source IP</th>
+                <th>Destination IP</th>
+                <th>Anomaly score</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="detectionRows">
+              <tr>
+                <td colspan="6" class="muted">Run detection to populate this table.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      const alertsList = document.getElementById('alertsList');
+      const detectionRows = document.getElementById('detectionRows');
+      const runStatus = document.getElementById('runStatus');
+      const totalAlerts = document.getElementById('totalAlerts');
+      const highestSeverity = document.getElementById('highestSeverity');
+      const criticalHigh = document.getElementById('criticalHigh');
+      const mediumLow = document.getElementById('mediumLow');
+      const logInput = document.getElementById('logInput');
+
+      function badgeClass(level) {
+        return ['critical', 'high', 'medium', 'low'].includes(level) ? level : 'low';
+      }
+
+      function renderAlerts(alerts) {
+        if (!alerts.length) {
+          alertsList.innerHTML = '<p class="muted">No alerts have been generated yet.</p>';
+          return;
+        }
+
+        alertsList.innerHTML = alerts.slice().reverse().map((alert) => `
+          <div class="alert-card">
+            <span class="badge ${badgeClass(alert.threat_level)}">${String(alert.threat_level || 'low').toUpperCase()}</span>
+            <strong>${alert.issue || 'Suspicious activity detected'}</strong>
+            <div class="muted">Session ${alert.session_id || 'n/a'} • Anomaly score ${Number(alert.anomaly_score || 0).toFixed(4)}</div>
+            <p>${alert.description || ''}</p>
+            <p><strong>Recommended action:</strong> ${alert.recommended_action || ''}</p>
+          </div>
+        `).join('');
+      }
+
+      function renderDetections(results) {
+        if (!results.length) {
+          detectionRows.innerHTML = '<tr><td colspan="6" class="muted">No detections returned.</td></tr>';
+          return;
+        }
+
+        detectionRows.innerHTML = results.map((row) => `
+          <tr>
+            <td>${row.session_id || 'n/a'}</td>
+            <td>${row.user_id || 'n/a'}</td>
+            <td>${row.src_ip || 'n/a'}</td>
+            <td>${row.dst_ip || 'n/a'}</td>
+            <td>${Number(row.anomaly_score || 0).toFixed(4)}</td>
+            <td><span class="badge ${row.classification === 'anomaly' ? 'high' : 'low'}">${String(row.classification || 'unknown').toUpperCase()}</span></td>
+          </tr>
+        `).join('');
+      }
+
+      async function refreshAlerts() {
+        const response = await fetch('/api/alerts');
+        const payload = await response.json();
+        renderAlerts(payload.alerts || []);
+        totalAlerts.textContent = payload.summary?.total_alerts ?? 0;
+        highestSeverity.textContent = payload.summary?.latest_alert?.threat_level || 'low';
+        criticalHigh.textContent = `${payload.summary?.severity_counts?.critical ?? 0} / ${payload.summary?.severity_counts?.high ?? 0}`;
+        mediumLow.textContent = `${payload.summary?.severity_counts?.medium ?? 0} / ${payload.summary?.severity_counts?.low ?? 0}`;
+      }
+
+      async function analyzeLogs() {
+        const logs = logInput.value.split('\n').map((line) => line.trim()).filter(Boolean);
+        runStatus.textContent = 'Analyzing logs and generating alerts...';
+        const response = await fetch('/detect', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ logs }),
+        });
+        const payload = await response.json();
+        if (!response.ok) {
+          runStatus.textContent = payload.error || 'Detection failed.';
+          return;
+        }
+
+        renderDetections(payload.results || []);
+        runStatus.textContent = `Processed ${payload.count} sessions, flagged ${payload.suspicious_count} as suspicious.`;
+        await refreshAlerts();
+      }
+
+      document.getElementById('runBtn').addEventListener('click', analyzeLogs);
+      document.getElementById('refreshBtn').addEventListener('click', refreshAlerts);
+      refreshAlerts();
+    </script>
+  </body>
+</html>

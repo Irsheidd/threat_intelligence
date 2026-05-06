@@ -67,6 +67,7 @@ def compute_features(df):
         session['session_id'] = g.name
         session['user_id'] = g['user_id'].mode().iloc[0] if not g['user_id'].mode().empty else 'unknown'
         session['src_ip'] = g['src_ip'].mode().iloc[0]
+        session['primary_dst_ip'] = g['dst_ip'].mode().iloc[0] if not g['dst_ip'].mode().empty else 'unknown'
         session['country'] = g['country'].mode().iloc[0]
         session['start_time'] = g['timestamp'].min()
         session['end_time'] = g['timestamp'].max()
