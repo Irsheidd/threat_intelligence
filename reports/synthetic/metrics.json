@@ -1,0 +1,57 @@
+{
+  "dataset": "sources/synthetic_logs.csv",
+  "split": "test",
+  "test_sessions": 450,
+  "attack_sessions": 65,
+  "precision": 0.897,
+  "recall": 0.8,
+  "f1": 0.846,
+  "roc_auc": 0.978,
+  "average_precision": 0.92,
+  "confusion": {
+    "true_negative": 379,
+    "false_positive": 6,
+    "false_negative": 13,
+    "true_positive": 52
+  },
+  "per_scenario": {
+    "brute_force": {
+      "sessions": 23,
+      "detection_rate": 0.913
+    },
+    "exfiltration": {
+      "sessions": 15,
+      "detection_rate": 1.0
+    },
+    "foreign_login": {
+      "sessions": 13,
+      "detection_rate": 0.154
+    },
+    "normal_browsing": {
+      "sessions": 254,
+      "false_alarm_rate": 0.016
+    },
+    "normal_login": {
+      "sessions": 81,
+      "false_alarm_rate": 0.012
+    },
+    "normal_upload": {
+      "sessions": 50,
+      "false_alarm_rate": 0.02
+    },
+    "port_scan": {
+      "sessions": 14,
+      "detection_rate": 1.0
+    }
+  },
+  "alert_severity_of_flagged_sessions": {
+    "attack": {
+      "high": 23,
+      "critical": 29
+    },
+    "normal": {
+      "high": 5,
+      "critical": 1
+    }
+  }
+}

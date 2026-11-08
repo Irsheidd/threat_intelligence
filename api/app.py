@@ -14,7 +14,10 @@ if str(WORKSPACE_ROOT) not in sys.path:
 from threat_intel.alerts import get_alert_summary, list_alerts
 from threat_intel.pipeline import run_threat_pipeline
 
+MAX_LOG_LINES = 5000
+
 app = Flask(__name__, template_folder='templates')
+app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024  # reject request bodies over 2 MB
 
 
 def _coerce_logs(payload: dict) -> list[str]:
@@ -23,6 +26,8 @@ def _coerce_logs(payload: dict) -> list[str]:
         raise ValueError('Missing logs. Provide "logs" as a list or "log" as a single entry.')
     if not isinstance(logs, list):
         logs = [logs]
+    if len(logs) > MAX_LOG_LINES:
+        raise ValueError(f'Too many log entries ({len(logs)}); the limit is {MAX_LOG_LINES} per request.')
     return logs
 
 
@@ -96,35 +101,6 @@ def detect():
         return jsonify({'error': str(exc)}), 400
     except Exception:
         return jsonify({'error': 'Model prediction failed.'}), 500
-
-    return jsonify(result), 200
-
-
-@app.route('/detect_url', methods=['POST'])
-def detect_url():
-    url = request.form.get('url')
-    if not url:
-        return jsonify({'error': 'Missing url form parameter.'}), 400
-
-    try:
-        import requests
-    except ImportError:
-        return jsonify({'error': 'Python package "requests" is required on the server.'}), 500
-
-    try:
-        response = requests.get(url, timeout=10)
-        response.raise_for_status()
-    except Exception as exc:
-        return jsonify({'error': f'Failed to fetch URL: {exc}'}), 400
-
-    lines = [line.strip() for line in response.text.splitlines() if line.strip()]
-    if not lines:
-        return jsonify({'error': 'No log lines found at provided URL.'}), 400
-
-    try:
-        result = _run_detection(lines)
-    except Exception as exc:
-        return jsonify({'error': str(exc)}), 400
 
     return jsonify(result), 200
 

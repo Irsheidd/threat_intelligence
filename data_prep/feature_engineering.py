@@ -82,7 +82,9 @@ def compute_features(df):
         session['num_data_transfer'] = int((g['event_type'] == 'data_transfer').sum())
         session['num_scan'] = int((g['event_type'] == 'scan').sum())
         session['hour_of_day'] = int(session['start_time'].hour)
-        session['requests_per_minute'] = (session['num_events'] / (max(session['duration_seconds'], 1) / 60.0))
+        # Rate over at least a one-minute window: dividing by max(duration, 1 second) gave
+        # every single-event session 60 requests/minute, which made it look like a flood.
+        session['requests_per_minute'] = session['num_events'] / max(session['duration_seconds'] / 60.0, 1.0)
         session['ip_request_freq'] = int(ip_freq.loc[session['src_ip']])
         # unusual country heuristic: mark if not JO (adjustable)
         session['country_unusual'] = 0 if session['country'] in ('JO', 'US') else 1
@@ -98,7 +100,11 @@ def compute_features(df):
 
 
 def main():
-    src = os.path.join('sources', 'network_logs.csv')
+    import argparse
+    parser = argparse.ArgumentParser(description='Turn raw logs into one feature row per session.')
+    parser.add_argument('--logs', default=os.path.join('sources', 'synthetic_logs.csv'),
+                        help='raw log CSV (default: the synthetic training benchmark)')
+    src = parser.parse_args().logs
     out_dir = os.path.join('data_prep', 'outputs')
     os.makedirs(out_dir, exist_ok=True)
 

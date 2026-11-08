@@ -325,6 +325,15 @@
         return ['critical', 'high', 'medium', 'low'].includes(level) ? level : 'low';
       }
 
+      // Every field below can come from a submitted log line, so it is escaped
+      // before going into innerHTML; otherwise a crafted session_id would run
+      // script in the analyst's browser.
+      function esc(value) {
+        return String(value ?? '').replace(/[&<>"']/g, (ch) => ({
+          '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+        }[ch]));
+      }
+
       function renderAlerts(alerts) {
         if (!alerts.length) {
           alertsList.innerHTML = '<p class="muted">No alerts have been generated yet.</p>';
@@ -333,11 +342,11 @@
 
         alertsList.innerHTML = alerts.slice().reverse().map((alert) => `
           <div class="alert-card">
-            <span class="badge ${badgeClass(alert.threat_level)}">${String(alert.threat_level || 'low').toUpperCase()}</span>
-            <strong>${alert.issue || 'Suspicious activity detected'}</strong>
-            <div class="muted">Session ${alert.session_id || 'n/a'} • Anomaly score ${Number(alert.anomaly_score || 0).toFixed(4)}</div>
-            <p>${alert.description || ''}</p>
-            <p><strong>Recommended action:</strong> ${alert.recommended_action || ''}</p>
+            <span class="badge ${badgeClass(alert.threat_level)}">${esc(String(alert.threat_level || 'low').toUpperCase())}</span>
+            <strong>${esc(alert.issue || 'Suspicious activity detected')}</strong>
+            <div class="muted">Session ${esc(alert.session_id || 'n/a')} • Anomaly score ${Number(alert.anomaly_score || 0).toFixed(4)}</div>
+            <p>${esc(alert.description)}</p>
+            <p><strong>Recommended action:</strong> ${esc(alert.recommended_action)}</p>
           </div>
         `).join('');
       }
@@ -350,12 +359,12 @@
 
         detectionRows.innerHTML = results.map((row) => `
           <tr>
-            <td>${row.session_id || 'n/a'}</td>
-            <td>${row.user_id || 'n/a'}</td>
-            <td>${row.src_ip || 'n/a'}</td>
-            <td>${row.dst_ip || 'n/a'}</td>
+            <td>${esc(row.session_id || 'n/a')}</td>
+            <td>${esc(row.user_id || 'n/a')}</td>
+            <td>${esc(row.src_ip || 'n/a')}</td>
+            <td>${esc(row.dst_ip || 'n/a')}</td>
             <td>${Number(row.anomaly_score || 0).toFixed(4)}</td>
-            <td><span class="badge ${row.classification === 'anomaly' ? 'high' : 'low'}">${String(row.classification || 'unknown').toUpperCase()}</span></td>
+            <td><span class="badge ${row.classification === 'anomaly' ? 'high' : 'low'}">${esc(String(row.classification || 'unknown').toUpperCase())}</span></td>
           </tr>
         `).join('');
       }

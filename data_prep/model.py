@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn.ensemble import IsolationForest
 
+from data_prep.split import split_sessions
+
 
 FEATURES_CSV_CANDIDATES = [
 	os.path.join('data_prep', 'outputs', 'features_dataset.csv'),
@@ -63,13 +65,36 @@ def save_results(df, model, X):
 	plt.close()
 
 
+def estimate_contamination(train_df, default=0.15):
+	"""Expected share of anomalies, taken from the training split's labels when they exist.
+
+	The detector itself never sees labels; this only places its alert threshold. A fixed
+	0.15 on a dataset that is 39% suspicious caps recall near 0.38 however well the
+	scores rank sessions.
+	"""
+	if 'label' not in train_df or train_df['label'].nunique() < 2:
+		return default
+	share = float((train_df['label'] != 'normal').mean())
+	return min(max(share, 0.01), 0.5)
+
+
 def main():
+	import argparse
+	parser = argparse.ArgumentParser(description='Train the Isolation Forest on the training split.')
+	parser.add_argument('--contamination', type=float,
+	                    help='expected anomaly share (default: estimated from training-split labels, else 0.15)')
+	args = parser.parse_args()
+
 	df = load_features()
+	# Fit on the training sessions only; data_prep/evaluate.py scores the held-out rest.
+	train_df, _ = split_sessions(df)
+	contamination = args.contamination or estimate_contamination(train_df)
+	model = train_isolation_forest(prepare_matrix(train_df), contamination=contamination)
 	X = prepare_matrix(df)
-	model = train_isolation_forest(X)
 	save_results(df, model, X)
 	anomaly_count = (model.predict(X) == -1).sum()
-	print(f'Training complete. Anomalies flagged: {anomaly_count}/{len(df)}')
+	print(f'Trained on {len(train_df)} sessions (contamination {contamination:.3f}). '
+	      f'Anomalies flagged across all {len(df)}: {anomaly_count}')
 	print(f'Results saved to: {RESULTS_CSV}')
 	print(f'Model saved to: {os.path.join(MODEL_DIR, "isolation_forest.joblib")}')
 	print(f'Plot saved to: {PLOT_PATH}')

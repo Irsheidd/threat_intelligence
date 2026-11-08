@@ -11,7 +11,7 @@ for path in (WORKSPACE_ROOT, PACKAGE_ROOT):
     if str(path) not in sys.path:
         sys.path.insert(0, str(path))
 
-from test_crew.workflow import load_sample_logs, run_threat_workflow
+from threat_crew.workflow import load_sample_logs, run_threat_workflow
 
 
 def _print_result(result: dict) -> None:
@@ -23,21 +23,6 @@ def run() -> dict:
     result = run_threat_workflow(load_sample_logs())
     _print_result(result)
     return result
-
-
-def train() -> dict:
-    """Compatibility wrapper for the old CrewAI template command."""
-    return run()
-
-
-def replay() -> dict:
-    """Compatibility wrapper for the old CrewAI template command."""
-    return run()
-
-
-def test() -> dict:
-    """Compatibility wrapper for the old CrewAI template command."""
-    return run()
 
 
 def run_with_trigger() -> dict:

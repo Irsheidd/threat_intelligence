@@ -79,6 +79,3 @@ def run_threat_workflow_for_logs(logs: list[str] | None = None) -> dict:
     credentials.
     """
     return run_threat_workflow(logs)
-
-
-TestCrew = ThreatIntelligenceCrew

@@ -1,0 +1,26 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements-dev.txt
+      - name: Rebuild benchmark, features and model from scratch
+        run: |
+          python -m data_prep.generate_logs
+          python -m data_prep.feature_engineering
+          python -m data_prep.model
+      - name: Evaluate on held-out benchmark sessions and on the unseen project dataset
+        run: |
+          python -m data_prep.evaluate
+          python -m data_prep.evaluate --logs sources/network_logs.csv --split all --out reports/project
+      - run: pytest -q
